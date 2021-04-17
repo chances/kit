@@ -1,6 +1,8 @@
 #pragma once
 
 #include "lexer.h"
+#include "document.h"
+#include "tokens.h"
 
 struct ParseError {
   /// Whether this error represents a compiler assertion failure; should always be reported.
