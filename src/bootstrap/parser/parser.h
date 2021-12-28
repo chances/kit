@@ -20,7 +20,7 @@ struct KitErrors {
 typedef struct KitErrors KitErrors;
 
 bool parseString(String module, KitErrors* errors) {
-  Token* tokens;
+  Token* tokens = NULL;
   if (!tokenize(module, tokens)) return false;
 
   // TODO: Port a basic parser from Haskell to convert token list to an AST
