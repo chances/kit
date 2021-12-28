@@ -39,12 +39,12 @@ int main(int argc, char** argv) {
   assert(read == inputFileLength);
 
   if (ferror(inputFile)) {
-    printf("%s: I/O error reading file", inputFileName);
-    return EXIT_FAILURE;
+    fprintf(stderr, "%s: I/O error reading file", inputFileName);
+    exit(EXIT_FAILURE);
   }
   if (fclose(inputFile) != 0) {
-    printf("%s: cannot close '%s'", inputFileName, inputFileName);
-    return EXIT_FAILURE;
+    fprintf(stderr, "%s: cannot close '%s'", inputFileName, inputFileName);
+    exit(EXIT_FAILURE);
   }
 
   String inputFileContents = toString(inputFileBuf);
@@ -52,12 +52,8 @@ int main(int argc, char** argv) {
 
   // Parse and interpret the input file
   KitErrors errors;
-  if (parseString(inputFileContents, &errors)) {
-    // TODO: If successful, dynamically interpret the parsed module
-  } else {
-    puts("Parser failure");
-    return EXIT_FAILURE;
-  }
+  if (!parseString(inputFileContents, &errors)) return EXIT_FAILURE;
+  // TODO: Dynamically interpret the parsed module
 
   return EXIT_SUCCESS;
 }
