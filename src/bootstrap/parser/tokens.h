@@ -115,7 +115,6 @@ TokenData(LiteralBool, {
 TokenData(LiteralString, {
   String value;
 });
-Maybe(NumSpec);
 TokenData(LiteralFloat, {
   String value;
   MaybeOf(NumSpec) type;
