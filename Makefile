@@ -16,6 +16,7 @@ build/eval: $(EVAL_SOURCES) src/bootstrap/eval.c
 	${CC} -Ibuild/gen -Isrc/bootstrap -Isrc/bootstrap/ast -Isrc/bootstrap/parser \
 	src/bootstrap/eval.c -o build/eval \
 	${CFLAGS} \
+	-g \
 	-Wno-extra-semi -Wno-implicit-function-declaration -Wno-nullability-completeness -Wno-nullability-extension
 
 clean:

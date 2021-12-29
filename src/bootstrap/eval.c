@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
   assert(inputFileContents.length == inputFileLength);
 
   // Parse and interpret the input file
-  KitErrors errors;
+  KitErrors errors = {0, NULL};
   if (!parseString(inputFileContents, &errors)) return EXIT_FAILURE;
   // TODO: Dynamically interpret the parsed module
 
