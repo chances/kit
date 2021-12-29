@@ -17,3 +17,6 @@ typedef struct Maybe_##T Maybe_##T;
 #define nothing(T) (MaybeOf(T)) { (Maybe_t) { true }, (T) {0} }
 
 #define just(T, value) (MaybeOf(T)) { (Maybe_t) { false }, value }
+
+/// Whether the given optional value is nothing.
+#define isNothing(maybe) (maybe)._state.isNull
