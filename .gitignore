@@ -15,3 +15,6 @@ build
 main
 .importify
 .vscode
+
+# Kit interpreter
+.dub
