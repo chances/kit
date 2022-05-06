@@ -25,7 +25,7 @@ struct Number(T) {
   Maybe!NumSpec type;
 }
 
-private enum numSpecs = [EnumMembers!NumSpec];
+private static immutable numSpecs = [EnumMembers!NumSpec];
 
 Maybe!NumSpec numSuffix(string input) {
   foreach(numSpec; numSpecs) if (input == numSpec) return just(numSpec);
