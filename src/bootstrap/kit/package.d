@@ -37,5 +37,6 @@ Maybe!T just(T)(T value) {
 }
 
 @property T value(T)(Maybe!T optional) {
+  assert(!optional.isNull);
   return optional.get;
 }
