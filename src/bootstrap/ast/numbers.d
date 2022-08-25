@@ -25,9 +25,9 @@ struct Number(T) {
   Maybe!NumSpec type;
 }
 
-private static immutable numSpecs = [EnumMembers!NumSpec];
+private static numSpecs = [EnumMembers!NumSpec];
 
-Maybe!NumSpec numSuffix(string input) {
+const(Maybe!NumSpec) numSuffix(string input) {
   foreach(numSpec; numSpecs) if (input == numSpec) return just(numSpec);
   return nothing!NumSpec;
   assert(0, "Unrecognized number suffix: " ~ input);

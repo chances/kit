@@ -1,8 +1,8 @@
 module kit.ast;
 
 struct Position {
-  int line;
-  int column;
+  ulong line;
+  ulong column;
 
   static Position zero() {
     return Position(0, 0);
@@ -17,12 +17,12 @@ struct Span {
 
 enum noPos = Span(null, Position.zero, Position.zero);
 
-Position posToPosition(string source, int pos) {
+Position posToPosition(string source, ulong pos) {
   Position position;
 
-  int line = 1;
-  int col = 0;
-  for (int i = 0; i <= pos; i += 1) {
+  ulong line = 1;
+  ulong col = 0;
+  for (ulong i = 0; i <= pos; i += 1) {
     if (source[i] == '\n') {
       line++;
       col = 0;
@@ -35,7 +35,7 @@ Position posToPosition(string source, int pos) {
   return position;
 }
 
-Span posToSpan(string source, int startPos, int endPos) {
+Span posToSpan(string source, ulong startPos, ulong endPos) {
   auto start = posToPosition(source, startPos);
   auto end = posToPosition(source, endPos);
   return Span(null, start, end);

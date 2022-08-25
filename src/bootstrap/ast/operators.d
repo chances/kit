@@ -26,8 +26,3 @@ enum Operator : string {
   invertBits = "~",
   cons = "::"
 }
-
-string show(Operator op) {
-  import std.conv : to;
-  return "op " ~ op.to!string;
-}
