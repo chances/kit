@@ -5,19 +5,18 @@
 
 Maybe(Token);
 
-struct TokenList {
+typedef struct {
   size_t length;
   Token* tokens;
-};
-typedef struct TokenList TokenList;
+  bool errored;
+} TokenList;
 
 #define isAtEnd(str, pos) (pos >= str.length)
 #define isRN_EOL(str, pos) (str.cString[pos] == '\r' && str.cString[pos+1] == '\n')
 #define isEOL(str, pos) (str.cString[pos] == '\n' || str.cString[pos] == '\r' || isRN_EOL(str, pos))
-#define lexError(str, pos, tok) {\
+#define lexError(str, pos, c) {\
   Span _errSpan = posToSpan(str, pos, pos);\
-  fprintf(stderr, "Error: %d:%d Unexpected token '%c'\n", _errSpan.start.line, _errSpan.start.column, tok);\
-  return false;\
+  fprintf(stderr, "Error: %d:%d Unexpected character '%c'\n", _errSpan.start.line, _errSpan.start.column, c);\
 }
 
 int scanToken(String source, size_t pos, MaybeOf(Token)* t);
@@ -41,9 +40,13 @@ bool tokenize(String source, TokenList* tokenList) {
       start = current += isRN_EOL(source, current) ? 2 : 1;
     }
     current += scanToken(source, start, &t);
-    if (isNothing(t)) lexError(source, start, source.cString[start]);
+    if (isNothing(t)) {
+      lexError(source, start, source.cString[start]);
+      tokenList->errored = true;
+      continue;
+    }
 
-    // Append the token and, if neccesary, resize and swap the the vector of Tokens
+    // Append the token and, if necessary, resize and swap the the vector of Tokens
     if (capacity < tokenList->length + 1) {
       Token* _newList = calloc(capacity += 7, sizeof(Token));
       Token* _oldList = tokenList->tokens;
@@ -51,6 +54,7 @@ bool tokenize(String source, TokenList* tokenList) {
       tokenList->tokens = _newList;
       free(_oldList);
     }
+    assert(!isNothing(t));
     tokenList->tokens[tokenList->length] = t.value;
     tokenList->length += 1;
   }
@@ -61,12 +65,19 @@ bool tokenize(String source, TokenList* tokenList) {
 #include <ctype.h>
 
 #define consume() source.cString[(pos += 1) - 1]
+// See https://stackoverflow.com/a/7937139/1363247
+struct peek { size_t offset; };
+#define peek(...) source.cString[pos + ((struct peek){.offset = 0, __VA_ARGS__}).offset]
+#define match(expected) isAtEnd(source, pos) ? false : (peek(.offset=1) == expected ? (pos += 1, true) : false)
 #define tok(typ) (Token) {typ, posToSpan(source, start, pos), NULL}
 
 int scanToken(String source, size_t pos, MaybeOf(Token)* t) {
   size_t start = pos;
+
+  // Single character tokens
   char c = consume();
   switch (c) {
+    // Syntactic Elements
     case '(': *t = just(Token, tok(ParenOpen)); break;
     case ')': *t = just(Token, tok(ParenClose)); break;
     case '{': *t = just(Token, tok(CurlyBraceOpen)); break;
@@ -76,12 +87,30 @@ int scanToken(String source, size_t pos, MaybeOf(Token)* t) {
     case ',': *t = just(Token, tok(Comma)); break;
     case ':': *t = just(Token, tok(Colon)); break;
     case ';': *t = just(Token, tok(Semicolon)); break;
-    case '.': *t = just(Token, tok(Dot)); break;
-    case '#': *t = just(Token, tok(Hash)); break;
+    case '.': {
+      TokenClass class = Dot;
+      if (match('*')) class = WildcardSuffix;
+      else if ((match('.') && match('.'))) class = TripleDot;
+      else if ((match('*') && match('*'))) class = DoubleWildcardSuffix;
+      *t = just(Token, tok(class));
+      break;
+    }
+    case '#':
+      *t = just(Token, tok(match('[') ? MetaOpen : Hash));
+      break;
     case '$': *t = just(Token, tok(Dollar)); break;
     case '?': *t = just(Token, tok(Question)); break;
     case '_': *t = just(Token, tok(Underscore)); break;
-    default: return 0;
+    // Operators
+    case '=': {
+      *t = just(Token, tok(match('>') ? Arrow : AssignOp));
+      if (t->value.type == AssignOp) {
+        t->value.data = malloc(sizeof(AssignOpData));
+        AssignOpData* data = (AssignOpData*)t->value.data;
+        *data = (AssignOpData) {Assign};
+      }
+      break;
+    }
   }
   return pos - start;
 }
